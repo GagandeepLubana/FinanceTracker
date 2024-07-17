@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useUser } from "@clerk/clerk-react"
 import axios from 'axios';
 
@@ -8,7 +8,7 @@ export const FinancialRecordForm = () => {
     const [amount, setAmount] = useState("")
     const [category, setCategory] = useState("")
     const [paymentMethod, setPaymentMethod] = useState("")
-
+    const [records, setRecords] = useState([])
     const {user} = useUser();
 
     const handleSubmit = async (event) => {
@@ -25,7 +25,7 @@ export const FinancialRecordForm = () => {
 
         try {
             await axios.post("http://localhost:3001/financial-records", newRecord);
-            alert("Form Created");
+            alert("Record Created");
         } catch (err) {
             console.error(err);
         }
@@ -36,6 +36,21 @@ export const FinancialRecordForm = () => {
         setPaymentMethod("");
 
     }
+
+    const fetchRecords = async () => {
+        if (!user) return;
+        try {
+            const records = await axios.get(`http://localhost:3001/financial-records/getAllByUserId/${user.id}`)
+            setRecords(records.data);
+            console.log(records.data);
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    useEffect(() => {
+        fetchRecords();
+    }, [user]);
 
     return (<div className="form-container">
         <form onSubmit={handleSubmit}>
